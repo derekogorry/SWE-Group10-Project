@@ -1,26 +1,12 @@
+-- Using MySQL
+
 CREATE TABLE Users (
     UserID INT PRIMARY KEY AUTO_INCREMENT,
-    Username VARCHAR(50) NOT NULL,
+    Username VARCHAR(50) UNIQUE NOT NULL,
     PasswordHash VARCHAR(255) NOT NULL,
     Role ENUM('Patient', 'Doctor') NOT NULL,
     Email VARCHAR(100) UNIQUE NOT NULL,
     CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE Patients (
-    PatientID INT PRIMARY KEY AUTO_INCREMENT,
-    UserID INT,
-    HealthData TEXT,
-    InsuranceID INT,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (InsuranceID) REFERENCES Insurance(InsuranceID)
-);
-
-CREATE TABLE Doctors (
-    DoctorID INT PRIMARY KEY AUTO_INCREMENT,
-    UserID INT,
-    Specialization VARCHAR(100),
-    FOREIGN KEY (UserID) REFERENCES Users(UserID)
 );
 
 CREATE TABLE Insurance (
@@ -30,14 +16,28 @@ CREATE TABLE Insurance (
     CoverageDetails TEXT
 );
 
-CREATE TABLE Appointments (
-    AppointmentID INT PRIMARY KEY AUTO_INCREMENT,
-    PatientID INT,
-    DoctorID INT,
-    AppointmentDate DATETIME,
-    Status ENUM('Scheduled', 'Completed', 'Cancelled'),
-    FOREIGN KEY (PatientID) REFERENCES Patients(PatientID),
-    FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID)
+CREATE TABLE Patients (
+    PatientID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT UNIQUE,
+    HealthData TEXT,
+    InsuranceID INT,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (InsuranceID) REFERENCES Insurance(InsuranceID) ON DELETE SET NULL
 );
 
--- Using MySQL as the DBMS
+CREATE TABLE Doctors (
+    DoctorID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT UNIQUE,
+    Specialization VARCHAR(100),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+CREATE TABLE Appointments (
+    AppointmentID INT PRIMARY KEY AUTO_INCREMENT,
+    PatientID INT NOT NULL,
+    DoctorID INT NOT NULL,
+    AppointmentDate DATETIME NOT NULL,
+    Status ENUM('Scheduled', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    FOREIGN KEY (PatientID) REFERENCES Patients(PatientID) ON DELETE CASCADE,
+    FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID) ON DELETE CASCADE
+);
